@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <queue>
 
 using namespace std;
 using char_node_t = Node<char>;
@@ -42,14 +43,68 @@ vector<char_node_t*> DFS(char_node_t* root, char target) {
 		path.insert(path.begin(), node_stack.top());
 		node_stack.pop();
 	}
-	
+
+	return path;
+}
+
+vector<char_node_t*> BFS(char_node_t* root, char target)
+{
+	// check for valid root node
+	if (root == nullptr) return vector<char_node_t*>();
+
+	// create nodes queue and queue root onto stack
+	queue<char_node_t*> node_queue;
+	root->visited = true;  // Mark root as visited
+	node_queue.push(root); // Push root node onto the queue
+
+	while (!node_queue.empty())
+	{
+		// get current node from the front of the queue
+		char_node_t* current = node_queue.front();
+
+		// check if the current node data is target value
+		if (current->data == target)
+		{
+			cout << "found: " << current->data << endl;
+			break;
+		}
+		else
+		{
+			cout << "visit: " << current->data << endl;
+		}
+
+		// if target not found then push all the children of the current node into the queue
+		for (char_node_t* child : current->children)
+		{
+			if (!child->visited)
+			{
+				child->visited = true;   // Mark child as visited
+				child->parent = current; // Set child node parent to current node
+				node_queue.push(child);  // Push child onto the queue
+			}
+		}
+
+		// pop the front of the queue
+		node_queue.pop();
+	}
+
+	// convert nodes to vector of nodes (path)
+	// nodes are in reverse order with the parent used to move through the nodes
+	// add nodes to front of path vector
+	vector<char_node_t*> path;
+	char_node_t* node = (!node_queue.empty()) ? node_queue.front() : nullptr;
+	while (node)
+	{
+		// add node and then set node to node parent
+		path.insert(path.begin(), node);
+		node = node->parent;
+	}
+
 	return path;
 }
 
 
 int main() {
-	cout << "hello world!\n";
-
 	//   A
 	// B   C
 	//D  E  F
@@ -67,7 +122,7 @@ int main() {
 	nodeC->children.push_back(nodeE);
 	nodeC->children.push_back(nodeF);
 
-	auto path = DFS(nodeA, 'F');
+	auto path = BFS(nodeA, 'F');
 
 	cout << "path: ";
 	for (auto node : path) {
